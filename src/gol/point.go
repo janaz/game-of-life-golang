@@ -7,19 +7,21 @@ type Point struct {
   x,y int
 }
 
+const SEPARATOR = ","
+
 func NewPoint(x,y int) *Point {
   return &Point{x,y}
 }
 
-func (p *Point) ToString() string {
-  return strings.Join([]string{strconv.Itoa(p.x), strconv.Itoa(p.y)}, ",")
-}
-
 func PointFromString(k string) *Point {
-  el := strings.Split(k, ",")
+  el := strings.Split(k, SEPARATOR)
   x, _ := strconv.Atoi(el[0])
   y, _ := strconv.Atoi(el[1])
   return NewPoint(x, y)
+}
+
+func (p *Point) ToString() string {
+  return strings.Join([]string{strconv.Itoa(p.x), strconv.Itoa(p.y)}, SEPARATOR)
 }
 
 func (p *Point) Neighbors() []*Point {
