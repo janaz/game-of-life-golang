@@ -27,9 +27,9 @@ func (b *Board) Next() *Board {
   next := NewBoard()
   for k,_ := range ( b.board ) {
     p := PointFromString(k)
-    b.Transfer(next, p)
+    go b.Transfer(next, p)
     for _,n := range p.Neighbors() {
-      b.Transfer(next, n)
+      go b.Transfer(next, n)
     }
 
   }
