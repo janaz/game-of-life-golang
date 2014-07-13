@@ -1,38 +1,57 @@
 package gol
 
 import "fmt"
+import "sync"
 
 type Board struct {
+  mu sync.Mutex
   board map[string]*Cell
 }
 
 func NewBoard() *Board {
   empty := map[string]*Cell {}
-  return &Board{empty}
+  m := sync.Mutex{}
+  return &Board{m, empty}
 }
 
 func (b *Board) SetAlive(p *Point) {
+  b.mu.Lock()
   b.board[p.ToString()] = NewCell(true)
+  b.mu.Unlock()
 }
 
-func (b *Board) Transfer(next *Board, p *Point) {
-  c:= b.GetCell(p).Next(b.AliveNeighbors(p))
-
-  if (c.IsAlive()) {
-    next.SetAlive(p)
+func (b *Board) Transfer(nr int, next *Board, cp chan Point, w *sync.WaitGroup) {
+  for pv := range cp{
+    p := &pv
+    //fmt.Printf("%v thread reporting %v\n",nr,p)
+    c:= b.GetCell(p).Next(b.AliveNeighbors(p))
+    if (c.IsAlive()) {
+      next.SetAlive(p)
+    }
   }
-
+  w.Done()
 }
+
 func (b *Board) Next() *Board {
   next := NewBoard()
-  for k,_ := range ( b.board ) {
-    p := PointFromString(k)
-    go b.Transfer(next, p)
-    for _,n := range p.Neighbors() {
-      go b.Transfer(next, n)
-    }
+  w := &sync.WaitGroup{}
+  w.Add(4)
+  points_channel := make(chan Point)
+  //4 threads
+  go b.Transfer(1, next, points_channel, w)
+  go b.Transfer(2, next, points_channel, w)
+  go b.Transfer(3, next, points_channel, w)
+  go b.Transfer(4, next, points_channel, w)
 
+  for k,_ := range ( b.board ) {
+    p:=PointFromString(k)
+    points_channel <- *p
+    for _,n := range p.Neighbors() {
+      points_channel <- *n
+    }
   }
+  close(points_channel)
+  w.Wait()
   return next
 }
 

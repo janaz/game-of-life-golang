@@ -16,7 +16,7 @@ func main() {
 
   for {
     board.Print(130,38)
-    time.Sleep(400 * time.Millisecond)
+    time.Sleep(10 * time.Millisecond)
     board = board.Next()
   }
 }
