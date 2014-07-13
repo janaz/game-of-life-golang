@@ -1,1 +1,1 @@
-== Conway's game of life implementation in golang
+### Conway's game of life implementation in golang
